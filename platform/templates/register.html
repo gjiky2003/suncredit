@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Create your SunCredit account{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-4rem)] flex items-center justify-center py-12 px-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-6">
+      <a href="{{ url_for('index') }}" class="inline-flex items-center gap-2">
+        <div class="w-12 h-12 rounded-2xl gradient-navy flex items-center justify-center shadow-lg"><i class="fa-solid fa-sun text-emerald2 text-xl"></i></div>
+      </a>
+      <h1 class="mt-4 text-2xl font-extrabold text-navy">Create your account</h1>
+      <p class="text-sm text-slate-500 mt-1">Check your rate in 2 minutes — no credit impact.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-7">
+      <form method="POST" action="{{ url_for('register') }}" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">First name</label>
+            <input name="first_name" required class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Last name</label>
+            <input name="last_name" required class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Email</label>
+          <input name="email" type="email" required class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Phone</label>
+          <input name="phone" type="tel" placeholder="(555) 555-5555" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Password <span class="text-slate-400">(8+ characters)</span></label>
+          <input id="pw" name="password" type="password" minlength="8" required class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none">
+          <div class="mt-2 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div id="pw-bar" class="h-full bg-red-400 transition-all" style="width:0%"></div>
+          </div>
+          <div id="pw-text" class="text-xs text-slate-500 mt-1">Strength: —</div>
+        </div>
+
+        <button class="w-full bg-emerald2 hover:bg-emerald2-700 text-white font-bold py-3 rounded-xl shadow-md shadow-emerald-900/20 mt-2">Create account <i class="fa-solid fa-arrow-right ml-1"></i></button>
+        <p class="text-xs text-slate-500 text-center">By continuing you agree to our <a href="/terms" class="text-navy underline">Terms</a> and <a href="/privacy" class="text-navy underline">Privacy</a>.</p>
+      </form>
+    </div>
+
+    <p class="text-center text-sm text-slate-600 mt-5">
+      Already have an account? <a href="{{ url_for('login') }}" class="text-emerald2 font-semibold hover:underline">Sign in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const pw = document.getElementById('pw'), bar = document.getElementById('pw-bar'), tx = document.getElementById('pw-text');
+pw.addEventListener('input', () => {
+  const v = pw.value; let s = 0;
+  if (v.length >= 8) s++; if (v.length >= 12) s++;
+  if (/[A-Z]/.test(v) && /[a-z]/.test(v)) s++;
+  if (/\d/.test(v)) s++; if (/[^A-Za-z0-9]/.test(v)) s++;
+  const labels = ['Too short','Weak','Fair','Good','Strong','Excellent'];
+  const colors = ['bg-red-400','bg-red-400','bg-amber-400','bg-yellow-400','bg-emerald-500','bg-emerald2'];
+  bar.className = 'h-full transition-all ' + colors[s];
+  bar.style.width = (s*20) + '%';
+  tx.textContent = 'Strength: ' + labels[s];
+});
+</script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{# Sidebar nav partial for borrower portal #}
+{% set _active = active|default('dashboard') %}
+<aside class="lg:w-64 lg:fixed lg:inset-y-0 lg:left-0 bg-white border-r border-slate-200 z-30">
+  <div class="h-full flex flex-col">
+    <div class="h-16 flex items-center px-6 border-b border-slate-200">
+      <a href="{{ url_for('index') }}" class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl gradient-navy flex items-center justify-center shadow"><i class="fa-solid fa-leaf text-emerald2"></i></div>
+        <span class="font-extrabold text-lg text-navy">Palm<span class="text-emerald2">Fi</span></span>
+      </a>
+    </div>
+    <nav class="flex-1 px-3 py-5 space-y-1 text-sm">
+      {% set items = [
+        ('dashboard','Dashboard','fa-gauge-high', url_for('dashboard')),
+        ('apply','Apply for Loan','fa-file-pen', url_for('apply')),
+        ('connect','Connect Bank','fa-building-columns', url_for('connect_bank')),
+        ('payments','Payments','fa-money-bill-wave', url_for('dashboard')+'#payments'),
+        ('settings','Settings','fa-gear','#'),
+      ] %}
+      {% for key, label, icon, href in items %}
+      <a href="{{href}}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium
+        {% if _active == key %}bg-emerald-50 text-emerald2-700 border border-emerald-100{% else %}text-slate-600 hover:bg-slate-50 hover:text-navy{% endif %}">
+        <i class="fa-solid {{icon}} w-5 text-center"></i>{{label}}
+      </a>
+      {% endfor %}
+    </nav>
+    <div class="p-3 border-t border-slate-200">
+      <a href="{{ url_for('logout') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600">
+        <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>Logout
+      </a>
+    </div>
+  </div>
+</aside>

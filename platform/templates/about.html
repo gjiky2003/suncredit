@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}About SunCredit{% endblock %}
+{% block content %}
+<section class="gradient-navy text-white">
+  <div class="max-w-4xl mx-auto px-6 py-20 text-center">
+    <h1 class="text-4xl sm:text-5xl font-extrabold">Lending, reimagined.</h1>
+    <p class="mt-4 text-lg text-slate-200 max-w-2xl mx-auto">SunCredit was founded on a simple belief: a credit score shouldn't be the only thing standing between you and your goals.</p>
+  </div>
+</section>
+
+<section class="max-w-4xl mx-auto px-6 py-16 space-y-12">
+  <div>
+    <h2 class="text-2xl font-extrabold text-navy mb-3"><i class="fa-solid fa-bullseye text-emerald2 mr-2"></i>Our mission</h2>
+    <p class="text-slate-700 leading-relaxed">We use modern machine learning and real-time cash-flow data to extend fair, affordable credit to working Americans — including the 50+ million whom traditional bureau scoring underserves.</p>
+  </div>
+
+  <div>
+    <h2 class="text-2xl font-extrabold text-navy mb-3"><i class="fa-solid fa-microchip text-emerald2 mr-2"></i>AI-native, by design</h2>
+    <p class="text-slate-700 leading-relaxed">Every loan decision is powered by a calibrated gradient-boosted model trained on millions of historical applications. Unlike legacy scorecards, our model continuously learns — and we publish performance metrics so you can hold us accountable.</p>
+  </div>
+
+  <div class="grid sm:grid-cols-3 gap-4">
+    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-6 text-center">
+      <p class="text-4xl font-extrabold text-emerald2">0.75+</p>
+      <p class="text-xs uppercase tracking-wider text-slate-600 mt-1">Model AUC</p>
+      <p class="text-xs text-slate-500 mt-2">Discrimination between good & bad credit risk</p>
+    </div>
+    <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6 text-center">
+      <p class="text-4xl font-extrabold text-gold">10–29%</p>
+      <p class="text-xs uppercase tracking-wider text-slate-600 mt-1">APR range</p>
+      <p class="text-xs text-slate-500 mt-2">Risk-priced and transparent</p>
+    </div>
+    <div class="bg-navy-50 border border-slate-200 rounded-2xl p-6 text-center">
+      <p class="text-4xl font-extrabold text-navy">Same-day</p>
+      <p class="text-xs uppercase tracking-wider text-slate-600 mt-1">Funding</p>
+      <p class="text-xs text-slate-500 mt-2">Direct deposit ACH</p>
+    </div>
+  </div>
+
+  <div>
+    <h2 class="text-2xl font-extrabold text-navy mb-3"><i class="fa-solid fa-eye text-emerald2 mr-2"></i>Transparency</h2>
+    <p class="text-slate-700 leading-relaxed">We disclose top decision drivers (Adverse Action Notices) for every declined applicant, monitor model fairness across protected classes quarterly, and publish a public model card. We comply with TILA, ECOA, FCRA, GLBA, and state lending laws.</p>
+  </div>
+</section>
+{% endblock %}

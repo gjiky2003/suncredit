@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loan Detail · SunCredit Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    .badge { display:inline-flex; align-items:center; gap:.25rem; padding:.125rem .5rem; border-radius:9999px; font-size:.7rem; font-weight:600; }
+    .badge-green { background:#d1fae5; color:#065f46; }
+    .badge-yellow { background:#fef3c7; color:#92400e; }
+    .badge-red { background:#fee2e2; color:#991b1b; }
+    .badge-gray { background:#e2e8f0; color:#334155; }
+    .badge-blue { background:#dbeafe; color:#1e40af; }
+    table.striped tbody tr:nth-child(odd) { background:#f8fafc; }
+    table.sticky-head thead th { position:sticky; top:0; background:#f1f5f9; z-index:1; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<aside class="w-64 fixed inset-y-0 left-0 bg-slate-900 border-r border-slate-800 flex flex-col z-30">
+  <div class="px-6 py-5 border-b border-slate-800">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-white"></i></div>
+      <div><div class="text-white font-bold leading-tight">SunCredit</div><div class="text-emerald-500 text-xs font-semibold tracking-wider">ADMIN</div></div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+<a href="/admin" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-gauge-high w-5"></i>Dashboard</a>
+<a href="/admin/portfolio" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-chart-pie w-5"></i>Portfolio</a>
+<a href="/admin/applications" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-file-lines w-5"></i>Applications</a>
+<a href="/admin/loans" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition bg-emerald-600 text-white shadow-md shadow-emerald-600/20"><i class="fa-solid fa-hand-holding-dollar w-5"></i>Loans</a>
+<a href="/admin/borrowers" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-users w-5"></i>Borrowers</a>
+<a href="/admin/collections" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-money-bill-transfer w-5"></i>Collections</a>
+<a href="/admin/kyc" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-id-card w-5"></i>KYC</a>
+<a href="/admin/settings" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-gear w-5"></i>Settings</a>
+  </nav>
+  <div class="px-3 py-3 border-t border-slate-800">
+    <a href="/admin/logout" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-red-950/40 hover:text-red-300 transition"><i class="fa-solid fa-right-from-bracket w-5"></i>Logout</a>
+  </div>
+</aside>
+<main class="ml-64 min-h-screen">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="px-8 pt-6 space-y-2">
+        {% for category, msg in messages %}
+          <div class="px-4 py-3 rounded-lg text-sm border flex items-start gap-2
+            {% if category == 'error' %}bg-red-50 border-red-200 text-red-800
+            {% elif category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+            {% else %}bg-slate-100 border-slate-200 text-slate-700{% endif %}">
+            <i class="fa-solid fa-circle-info mt-0.5"></i><div>{{ msg }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+<div class="px-8 py-6">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <a href="/admin/loans" class="text-xs text-slate-500 hover:text-emerald-600"><i class="fa-solid fa-arrow-left mr-1"></i>Back to Loans</a>
+      <h1 class="text-2xl font-bold text-slate-900 mt-1">Loan #{{ loan.id }}</h1>
+      <p class="text-sm text-slate-500">Originated {{ loan.created_at }} · Status:
+        <span class="badge {% if loan.status == 'active' %}badge-green{% elif loan.status == 'overdue' %}badge-red{% elif loan.status == 'paid' %}badge-blue{% else %}badge-gray{% endif %}">{{ loan.status }}</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Borrower card -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+      <h2 class="font-semibold text-slate-900 mb-3"><i class="fa-solid fa-user text-emerald-600 mr-2"></i>Borrower</h2>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-slate-500">Name</span><span class="font-medium">{{ borrower.name }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Email</span><span class="font-medium">{{ borrower.email }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Phone</span><span class="font-medium">{{ borrower.phone or '—' }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">KYC</span>
+          <span class="badge {% if borrower.kyc_status == 'verified' %}badge-green{% elif borrower.kyc_status == 'pending' %}badge-yellow{% else %}badge-red{% endif %}">{{ borrower.kyc_status }}</span>
+        </div>
+        <div class="flex justify-between"><span class="text-slate-500">Credit Score</span><span class="font-bold text-emerald-700">{{ borrower.credit_score or '—' }}</span></div>
+      </div>
+      <a href="/admin/borrowers/{{ borrower.id }}" class="block mt-4 text-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm">View Full Profile</a>
+    </div>
+
+    <!-- Loan terms -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+      <h2 class="font-semibold text-slate-900 mb-3"><i class="fa-solid fa-file-contract text-emerald-600 mr-2"></i>Loan Terms</h2>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-slate-500">Principal</span><span class="font-medium">${{ '{:,.2f}'.format(loan.principal or 0) }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">APR</span><span class="font-medium">{{ '%.2f'|format(loan.apr or 0) }}%</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Term</span><span class="font-medium">{{ loan.term_months }} months</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Monthly Payment</span><span class="font-medium">${{ '{:,.2f}'.format(loan.monthly_payment or 0) }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Originated</span><span class="font-medium">{{ loan.created_at }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Maturity</span><span class="font-medium">{{ loan.maturity_date or '—' }}</span></div>
+        <div class="flex justify-between"><span class="text-slate-500">Outstanding</span><span class="font-bold">${{ '{:,.2f}'.format(loan.outstanding or 0) }}</span></div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+      <h2 class="font-semibold text-slate-900 mb-3"><i class="fa-solid fa-bolt text-emerald-600 mr-2"></i>Actions</h2>
+      <div class="space-y-2">
+        <form method="POST" action="/admin/loans/{{ loan.id }}/mark-paid"><button class="w-full px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium"><i class="fa-solid fa-check mr-1"></i>Mark Paid</button></form>
+        <form method="POST" action="/admin/loans/{{ loan.id }}/send-reminder"><button class="w-full px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium"><i class="fa-solid fa-bell mr-1"></i>Send Reminder</button></form>
+        <a href="/admin/loans/{{ loan.id }}/modify" class="block text-center px-3 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium"><i class="fa-solid fa-pen-to-square mr-1"></i>Modify</a>
+        <form method="POST" action="/admin/loans/{{ loan.id }}/charge-off" onsubmit="return confirm('Charge off this loan? This is irreversible.');"><button class="w-full px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-sm font-medium"><i class="fa-solid fa-ban mr-1"></i>Charge Off</button></form>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+      <div class="px-5 py-4 border-b border-slate-200"><h2 class="font-semibold"><i class="fa-solid fa-list-ol text-emerald-600 mr-2"></i>Amortization Schedule</h2></div>
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-sm striped sticky-head">
+          <thead class="text-xs uppercase text-slate-600"><tr><th class="text-left px-4 py-2">#</th><th class="text-left px-4 py-2">Due</th><th class="text-right px-4 py-2">Payment</th><th class="text-right px-4 py-2">Principal</th><th class="text-right px-4 py-2">Interest</th><th class="text-right px-4 py-2">Balance</th><th class="text-center px-4 py-2">Status</th></tr></thead>
+          <tbody>
+          {% for s in schedule %}
+            <tr class="border-t border-slate-100"><td class="px-4 py-2">{{ s.n }}</td><td class="px-4 py-2 text-xs">{{ s.due_date }}</td><td class="px-4 py-2 text-right">${{ '{:,.2f}'.format(s.payment or 0) }}</td><td class="px-4 py-2 text-right">${{ '{:,.2f}'.format(s.principal or 0) }}</td><td class="px-4 py-2 text-right text-slate-500">${{ '{:,.2f}'.format(s.interest or 0) }}</td><td class="px-4 py-2 text-right">${{ '{:,.2f}'.format(s.balance or 0) }}</td><td class="px-4 py-2 text-center"><span class="badge {% if s.status == 'paid' %}badge-green{% elif s.status == 'overdue' %}badge-red{% else %}badge-gray{% endif %}">{{ s.status }}</span></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+      <div class="px-5 py-4 border-b border-slate-200"><h2 class="font-semibold"><i class="fa-solid fa-money-check-dollar text-emerald-600 mr-2"></i>Payment History</h2></div>
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-sm striped sticky-head">
+          <thead class="text-xs uppercase text-slate-600"><tr><th class="text-left px-4 py-2">Date</th><th class="text-right px-4 py-2">Amount</th><th class="text-left px-4 py-2">Method</th><th class="text-center px-4 py-2">Status</th></tr></thead>
+          <tbody>
+          {% for p in payments %}
+            <tr class="border-t border-slate-100"><td class="px-4 py-2 text-xs">{{ p.paid_at }}</td><td class="px-4 py-2 text-right font-medium">${{ '{:,.2f}'.format(p.amount or 0) }}</td><td class="px-4 py-2">{{ p.method or 'ACH' }}</td><td class="px-4 py-2 text-center"><span class="badge {% if p.status == 'completed' %}badge-green{% elif p.status == 'failed' %}badge-red{% else %}badge-yellow{% endif %}">{{ p.status }}</span></td></tr>
+          {% else %}
+            <tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">No payments yet</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+      <div class="px-5 py-4 border-b border-slate-200"><h2 class="font-semibold"><i class="fa-solid fa-money-bill-transfer text-emerald-600 mr-2"></i>Collections History</h2></div>
+      <ul class="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+        {% for c in collections %}
+        <li class="px-5 py-3 text-sm">
+          <div class="flex justify-between"><span class="font-medium">Stage {{ c.stage }} · {{ c.action }}</span><span class="text-xs text-slate-500">{{ c.created_at }}</span></div>
+          <div class="text-xs text-slate-500 mt-1">{{ c.notes or '' }}</div>
+        </li>
+        {% else %}
+        <li class="px-5 py-8 text-center text-slate-400 text-sm">No collections actions</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+      <div class="px-5 py-4 border-b border-slate-200"><h2 class="font-semibold"><i class="fa-solid fa-clock-rotate-left text-emerald-600 mr-2"></i>Audit Log</h2></div>
+      <ul class="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+        {% for a in activity %}
+        <li class="px-5 py-3 text-sm">
+          <div class="flex justify-between"><span>{{ a.action }}</span><span class="text-xs text-slate-500">{{ a.created_at }}</span></div>
+          <div class="text-xs text-slate-500 mt-1">{{ a.actor or 'system' }}{% if a.detail %} · {{ a.detail }}{% endif %}</div>
+        </li>
+        {% else %}
+        <li class="px-5 py-8 text-center text-slate-400 text-sm">No audit entries</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+</main>
+</body>
+</html>

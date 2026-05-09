@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Connect bank — SunCredit{% endblock %}
+
+{% block content %}
+{# Support both shapes: app passes `profiles` dict; spec mentions `banks` list of tuples #}
+{% set bank_list = [] %}
+{% if banks is defined and banks %}
+  {% set bank_list = banks %}
+{% elif profiles is defined and profiles %}
+  {% for k, v in profiles.items() %}{% set _ = bank_list.append((k, v.get('name'), v.get('description'))) %}{% endfor %}
+{% endif %}
+
+{% set _connected = connected if connected is defined else (user and (user['cash_flow_score']|int) > 0) %}
+{% set _score = (cf_score if cf_score is defined else (user['cash_flow_score'] if user and 'cash_flow_score' in user.keys() else 0))|int %}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-extrabold text-navy"><i class="fa-solid fa-building-columns text-emerald2 mr-2"></i>Connect your bank</h1>
+    <p class="text-slate-500 mt-2 max-w-xl mx-auto">Cash-flow underwriting can lower your rate and approve you even with a thin credit file.</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for c, m in messages %}<div class="mb-4 rounded-lg px-4 py-3 text-sm {% if c=='success' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% elif c=='danger' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-sky-50 text-sky-700 border border-sky-200{% endif %}">{{ m }}</div>{% endfor %}{% endif %}
+  {% endwith %}
+
+{% if _connected %}
+  <div class="bg-white rounded-2xl border border-emerald-100 shadow-md overflow-hidden mb-6">
+    <div class="gradient-emerald text-white p-6 flex items-center gap-4">
+      <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center"><i class="fa-solid fa-circle-check text-3xl"></i></div>
+      <div>
+        <p class="text-emerald-50 text-sm">Connected</p>
+        <p class="text-2xl font-bold">{{ bank_name|default('Your bank') }}</p>
+        {% if account_last4 is defined %}<p class="text-sm text-emerald-100">Account ending •••• {{ account_last4 }}</p>{% endif %}
+      </div>
+      <div class="ml-auto text-right">
+        <p class="text-emerald-50 text-xs uppercase tracking-wider">Cash-flow score</p>
+        <p class="text-4xl font-extrabold">{{ _score }}</p>
+      </div>
+    </div>
+    <div class="p-6 grid sm:grid-cols-3 gap-4">
+      <div><p class="text-xs text-slate-500">Months analyzed</p><p class="text-xl font-bold text-navy">{{ months_analyzed|default(3) }}</p></div>
+      <div><p class="text-xs text-slate-500">Inflows (monthly)</p><p class="text-xl font-bold text-navy">${{ '{:,.0f}'.format((cf_income|default(0))|float) }}</p></div>
+      <div><p class="text-xs text-slate-500">Status</p>
+        {% if cf_boosted|default(false) %}<span class="inline-block px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold">Rate boosted ✨</span>
+        {% else %}<span class="inline-block px-3 py-1 rounded-full bg-slate-50 text-slate-700 text-xs font-bold">Reviewed</span>{% endif %}
+      </div>
+    </div>
+    <div class="p-6 pt-0 flex gap-3">
+      <a href="{{ url_for('apply') }}" class="bg-emerald2 hover:bg-emerald2-700 text-white font-semibold px-5 py-2.5 rounded-lg">Continue application</a>
+      <a href="{{ url_for('dashboard') }}" class="border border-slate-200 hover:border-navy text-navy font-semibold px-5 py-2.5 rounded-lg">Dashboard</a>
+    </div>
+  </div>
+{% endif %}
+
+  <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 mb-6">
+    <h3 class="font-bold text-emerald-900 mb-2"><i class="fa-solid fa-circle-info mr-1"></i>Why connect?</h3>
+    <ul class="text-sm text-emerald-800 space-y-1">
+      <li>✓ Improves rates by analyzing real income & expenses</li>
+      <li>✓ Helps thin-file borrowers get approved without long credit history</li>
+      <li>✓ Read-only access. We never store credentials. Disconnect anytime.</li>
+    </ul>
+  </div>
+
+  <h2 class="font-bold text-navy text-lg mb-3">{% if _connected %}Switch bank profile{% else %}Choose a sample bank profile (demo){% endif %}</h2>
+
+  <div class="grid sm:grid-cols-2 gap-4">
+    {% for key, name, desc in bank_list %}
+      {% set icon = {'chase_good':'fa-building-columns','wells_avg':'fa-landmark','bofa_thin':'fa-piggy-bank','us_bank_gig':'fa-money-bill-trend-up','chime_risky':'fa-mobile-screen'}.get(key,'fa-building-columns') %}
+      {% set tone = {'chase_good':'emerald','wells_avg':'sky','bofa_thin':'amber','us_bank_gig':'navy','chime_risky':'red'}.get(key,'navy') %}
+      <form method="POST" action="{{ url_for('connect_bank') }}" class="bg-white rounded-2xl border border-slate-100 hover:border-emerald2 hover:shadow-md transition p-5 flex gap-4">
+        <div class="w-14 h-14 rounded-xl flex items-center justify-center shrink-0
+          {% if tone=='emerald' %}bg-emerald-50 text-emerald2
+          {% elif tone=='sky' %}bg-sky-50 text-sky-600
+          {% elif tone=='amber' %}bg-amber-50 text-amber-600
+          {% elif tone=='red' %}bg-red-50 text-red-600
+          {% else %}bg-navy-50 text-navy{% endif %}">
+          <i class="fa-solid {{icon}} text-xl"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-navy">{{ name }}</p>
+          <p class="text-xs text-slate-500 mt-0.5">{{ desc }}</p>
+          <input type="hidden" name="profile" value="{{ key }}">
+          <input type="hidden" name="bank_profile" value="{{ key }}">
+          <button class="mt-3 text-sm font-semibold bg-navy hover:bg-navy-700 text-white px-4 py-2 rounded-lg">
+            <i class="fa-solid fa-link mr-1"></i>Connect
+          </button>
+        </div>
+      </form>
+    {% endfor %}
+  </div>
+
+  <p class="text-center text-xs text-slate-400 mt-8"><i class="fa-solid fa-shield-halved mr-1"></i>256-bit encryption. Read-only access via secure aggregator.</p>
+</div>
+{% endblock %}

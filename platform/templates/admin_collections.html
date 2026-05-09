@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collections · SunCredit Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    .badge { display:inline-flex; align-items:center; gap:.25rem; padding:.125rem .5rem; border-radius:9999px; font-size:.7rem; font-weight:600; }
+    .badge-green { background:#d1fae5; color:#065f46; }
+    .badge-yellow { background:#fef3c7; color:#92400e; }
+    .badge-red { background:#fee2e2; color:#991b1b; }
+    .badge-gray { background:#e2e8f0; color:#334155; }
+    .badge-blue { background:#dbeafe; color:#1e40af; }
+    table.striped tbody tr:nth-child(odd) { background:#f8fafc; }
+    table.sticky-head thead th { position:sticky; top:0; background:#f1f5f9; z-index:1; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<aside class="w-64 fixed inset-y-0 left-0 bg-slate-900 border-r border-slate-800 flex flex-col z-30">
+  <div class="px-6 py-5 border-b border-slate-800">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-white"></i></div>
+      <div><div class="text-white font-bold leading-tight">SunCredit</div><div class="text-emerald-500 text-xs font-semibold tracking-wider">ADMIN</div></div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+<a href="/admin" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-gauge-high w-5"></i>Dashboard</a>
+<a href="/admin/portfolio" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-chart-pie w-5"></i>Portfolio</a>
+<a href="/admin/applications" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-file-lines w-5"></i>Applications</a>
+<a href="/admin/loans" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-hand-holding-dollar w-5"></i>Loans</a>
+<a href="/admin/borrowers" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-users w-5"></i>Borrowers</a>
+<a href="/admin/collections" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition bg-emerald-600 text-white shadow-md shadow-emerald-600/20"><i class="fa-solid fa-money-bill-transfer w-5"></i>Collections</a>
+<a href="/admin/kyc" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-id-card w-5"></i>KYC</a>
+<a href="/admin/settings" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-gear w-5"></i>Settings</a>
+  </nav>
+  <div class="px-3 py-3 border-t border-slate-800">
+    <a href="/admin/logout" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-red-950/40 hover:text-red-300 transition"><i class="fa-solid fa-right-from-bracket w-5"></i>Logout</a>
+  </div>
+</aside>
+<main class="ml-64 min-h-screen">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="px-8 pt-6 space-y-2">
+        {% for category, msg in messages %}
+          <div class="px-4 py-3 rounded-lg text-sm border flex items-start gap-2
+            {% if category == 'error' %}bg-red-50 border-red-200 text-red-800
+            {% elif category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+            {% else %}bg-slate-100 border-slate-200 text-slate-700{% endif %}">
+            <i class="fa-solid fa-circle-info mt-0.5"></i><div>{{ msg }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+<div class="px-8 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div><h1 class="text-2xl font-bold text-slate-900">Collections</h1><p class="text-sm text-slate-500">Overdue accounts and recovery workflow</p></div>
+    <form method="POST" action="/admin/collections/run-cycle">
+      <button class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium"><i class="fa-solid fa-rotate mr-2"></i>Run Collections Cycle</button>
+    </form>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase text-slate-500 font-semibold">Total Overdue</div>
+      <div class="text-2xl font-bold text-red-600 mt-1">{{ stats.total_overdue or 0 }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase text-slate-500 font-semibold">Total at Risk</div>
+      <div class="text-2xl font-bold text-amber-600 mt-1">${{ '{:,.0f}'.format(stats.total_at_risk or 0) }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase text-slate-500 font-semibold">Charged Off</div>
+      <div class="text-2xl font-bold text-slate-900 mt-1">${{ '{:,.0f}'.format(stats.total_charged_off or 0) }}</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase text-slate-500 font-semibold">Stage Counts</div>
+      <div class="flex gap-1 mt-2 flex-wrap">
+        {% for i in range(6) %}
+          <span class="badge {% if i <= 1 %}badge-yellow{% elif i <= 3 %}badge-red{% else %}badge-gray{% endif %}">S{{ i }}: {{ (stats.stage_counts or {}).get(i, 0) }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 mb-6">
+    <div class="px-5 py-4 border-b border-slate-200"><h2 class="font-semibold"><i class="fa-solid fa-triangle-exclamation text-red-600 mr-2"></i>Overdue Loans</h2></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm striped">
+        <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2">Loan</th>
+            <th class="text-left px-3 py-2">Borrower</th>
+            <th class="text-right px-3 py-2">DPD</th>
+            <th class="text-center px-3 py-2">Stage</th>
+            <th class="text-right px-3 py-2">Amount Due</th>
+            <th class="text-left px-3 py-2">Last Action</th>
+            <th class="text-center px-3 py-2">Next Action</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for o in overdue %}
+          <tr class="border-t border-slate-100">
+            <td class="px-3 py-2"><a href="/admin/loans/{{ o.loan_id }}" class="font-mono text-xs text-emerald-600 hover:underline">#{{ o.loan_id }}</a></td>
+            <td class="px-3 py-2">{{ o.borrower_name }}</td>
+            <td class="px-3 py-2 text-right font-bold {% if (o.days_past_due or 0) > 60 %}text-red-600{% elif (o.days_past_due or 0) > 30 %}text-amber-600{% else %}text-slate-700{% endif %}">{{ o.days_past_due }}d</td>
+            <td class="px-3 py-2 text-center">
+              <span class="badge {% if (o.stage or 0) <= 1 %}badge-yellow{% elif (o.stage or 0) <= 3 %}badge-red{% else %}badge-gray{% endif %}">Stage {{ o.stage or 0 }}</span>
+            </td>
+            <td class="px-3 py-2 text-right font-medium">${{ '{:,.2f}'.format(o.amount_due or 0) }}</td>
+            <td class="px-3 py-2 text-xs text-slate-500">{{ o.last_action or '—' }}</td>
+            <td class="px-3 py-2 text-center">
+              <form method="POST" action="/admin/collections/{{ o.loan_id }}/advance" class="inline">
+                <button class="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs"><i class="fa-solid fa-forward mr-1"></i>{{ o.next_action or 'Advance' }}</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="px-4 py-12 text-center text-slate-400">No overdue loans 🎉</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+    <div class="px-5 py-4 border-b border-slate-200"><h2 class="font-semibold"><i class="fa-solid fa-clock-rotate-left text-emerald-600 mr-2"></i>Recent Collection Actions</h2></div>
+    <ul class="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+      {% for r in records %}
+      <li class="px-5 py-3 text-sm flex items-start gap-3">
+        <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bolt text-xs"></i></div>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between"><span class="font-medium">{{ r.action }} <a href="/admin/loans/{{ r.loan_id }}" class="text-emerald-600 hover:underline ml-1">#{{ r.loan_id }}</a></span><span class="text-xs text-slate-500">{{ r.created_at }}</span></div>
+          <div class="text-xs text-slate-500 mt-0.5">Stage {{ r.stage }} · {{ r.notes or '' }}</div>
+        </div>
+      </li>
+      {% else %}
+      <li class="px-5 py-8 text-center text-slate-400 text-sm">No recent collection actions</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SunCredit{% endblock %}
+{% block nav %}{% endblock %}
+{% block flash %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+{% set borrower = user %}
+{% set active_loan = (loans[0] if loans and loans|length > 0 else None) %}
+{% set kyc_status = borrower['kyc_status'] if borrower and 'kyc_status' in borrower.keys() else 'pending' %}
+
+<div class="min-h-screen lg:flex bg-slate-50">
+  {% with active='dashboard' %}{% include '_sidebar.html' %}{% endwith %}
+
+  <div class="flex-1 lg:ml-64">
+    <!-- Top bar -->
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-20">
+      <div>
+        <h1 class="text-lg font-bold text-navy">Dashboard</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-sm text-slate-600 hidden sm:block">{{ borrower['email'] }}</span>
+        <div class="w-9 h-9 rounded-full gradient-navy text-white flex items-center justify-center font-bold text-sm">{{ (borrower['first_name'] or 'U')[0]|upper }}</div>
+      </div>
+    </header>
+
+    <main class="p-6 lg:p-8 space-y-6 max-w-6xl">
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for c, m in messages %}
+          <div class="rounded-lg px-4 py-3 text-sm border
+            {% if c=='success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+            {% elif c=='danger' %}bg-red-50 border-red-200 text-red-800
+            {% else %}bg-sky-50 border-sky-200 text-sky-800{% endif %}">{{ m }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <!-- Greeting -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-navy">Welcome back, {{ borrower['first_name'] or 'there' }} 👋</h2>
+          <p class="text-slate-500 mt-1">Here's where things stand today.</p>
+        </div>
+        <div>
+          {% set kc = {'verified':('emerald','fa-circle-check','KYC verified'),
+                       'pending':('amber','fa-clock','KYC pending'),
+                       'rejected':('red','fa-circle-xmark','KYC rejected')}.get(kyc_status, ('slate','fa-circle','KYC '+kyc_status|string)) %}
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold
+            {% if kc[0]=='emerald' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+            {% elif kc[0]=='amber' %}bg-amber-50 text-amber-700 border border-amber-200
+            {% elif kc[0]=='red' %}bg-red-50 text-red-700 border border-red-200
+            {% else %}bg-slate-50 text-slate-700 border border-slate-200{% endif %}">
+            <i class="fa-solid {{kc[1]}}"></i>{{ kc[2] }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Active loan card -->
+      {% if active_loan %}
+      {% set bal = active_loan['remaining_balance']|float %}
+      {% set mp = active_loan['monthly_payment']|float %}
+      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="gradient-navy text-white p-6 flex flex-wrap justify-between items-start gap-4">
+          <div>
+            <p class="text-xs uppercase tracking-wider text-slate-300">Active loan</p>
+            <p class="text-3xl font-extrabold mt-1">${{ '{:,.2f}'.format(bal) }}</p>
+            <p class="text-sm text-slate-300">Remaining balance</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs uppercase tracking-wider text-slate-300">APR</p>
+            <p class="text-2xl font-bold text-gold">{{ '%.2f'|format(active_loan['interest_rate']*100) }}%</p>
+            <p class="text-xs text-slate-300">{{ active_loan['term_months'] }}-month term</p>
+          </div>
+        </div>
+        <div class="p-6 grid sm:grid-cols-3 gap-4">
+          <div>
+            <p class="text-xs text-slate-500">Monthly payment</p>
+            <p class="text-xl font-bold text-navy">${{ '{:,.2f}'.format(mp) }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Next payment date</p>
+            <p class="text-xl font-bold text-navy">{{ active_loan['next_payment_date'] or '—' }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Status</p>
+            <p class="text-xl font-bold text-emerald2 capitalize">{{ active_loan['status'] }}</p>
+          </div>
+        </div>
+        <div class="px-6 pb-6 flex flex-wrap gap-3">
+          <a href="{{ url_for('loan_detail', loan_id=active_loan['id']) }}" class="bg-emerald2 hover:bg-emerald2-700 text-white font-semibold px-5 py-2.5 rounded-lg"><i class="fa-solid fa-credit-card mr-1"></i>Make Payment</a>
+          <a href="{{ url_for('loan_detail', loan_id=active_loan['id']) }}" class="border border-slate-200 hover:border-navy text-navy font-semibold px-5 py-2.5 rounded-lg">View Schedule</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="bg-white rounded-2xl border-2 border-dashed border-slate-200 p-10 text-center">
+        <i class="fa-solid fa-hand-holding-dollar text-5xl text-emerald2 mb-3"></i>
+        <h3 class="text-xl font-bold text-navy">No active loan</h3>
+        <p class="text-slate-500 mt-1">Apply now and get your real rate in minutes.</p>
+        <a href="{{ url_for('apply') }}" class="inline-block mt-5 bg-emerald2 hover:bg-emerald2-700 text-white font-semibold px-6 py-3 rounded-xl">Apply for a loan <i class="fa-solid fa-arrow-right ml-1"></i></a>
+      </div>
+      {% endif %}
+
+      <!-- Quick actions -->
+      <div class="grid sm:grid-cols-3 gap-4">
+        {% set actions = [
+          (url_for('apply'), 'fa-file-pen', 'Apply for Loan', 'Start a new application'),
+          (url_for('connect_bank'), 'fa-building-columns', 'Connect Bank', 'Improve your rate'),
+          ('#payments', 'fa-list-check', 'View Schedule', 'See upcoming payments')
+        ] %}
+        {% for href, icon, title, sub in actions %}
+        <a href="{{href}}" class="bg-white rounded-2xl border border-slate-100 p-5 hover:border-emerald2 hover:shadow-md transition group">
+          <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald2 flex items-center justify-center mb-3 group-hover:bg-emerald2 group-hover:text-white transition"><i class="fa-solid {{icon}}"></i></div>
+          <p class="font-bold text-navy">{{ title }}</p>
+          <p class="text-xs text-slate-500">{{ sub }}</p>
+        </a>
+        {% endfor %}
+      </div>
+
+      <!-- Recent payments -->
+      <div id="payments" class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+          <h3 class="font-bold text-navy">Recent payments</h3>
+          <span class="text-xs text-slate-500">{{ payments|length }} total</span>
+        </div>
+        {% if payments and payments|length > 0 %}
+        <div class="divide-y divide-slate-100">
+          {% for p in payments[:5] %}
+          <div class="px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-emerald-50 text-emerald2 flex items-center justify-center"><i class="fa-solid fa-check"></i></div>
+              <div>
+                <p class="font-semibold text-slate-800">${{ '{:,.2f}'.format(p['amount']|float) }}</p>
+                <p class="text-xs text-slate-500">{{ p['created_at'] or p['payment_date'] or '' }}</p>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold capitalize">{{ p['status'] if 'status' in p.keys() else 'completed' }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="px-6 py-10 text-center text-slate-500 text-sm">No payments yet.</div>
+        {% endif %}
+      </div>
+
+    </main>
+  </div>
+</div>
+{% endblock %}

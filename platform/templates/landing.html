@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}SunCredit — AI-powered loans for everyone{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="gradient-navy text-white relative overflow-hidden">
+  <div class="absolute inset-0 opacity-10" style="background-image:radial-gradient(circle at 20% 20%, #d4a017 1px, transparent 1px), radial-gradient(circle at 80% 60%, #059669 1px, transparent 1px); background-size:40px 40px;"></div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28 grid lg:grid-cols-2 gap-12 items-center relative">
+    <div>
+      <span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-xs font-medium mb-6">
+        <span class="w-2 h-2 bg-emerald2 rounded-full animate-pulse"></span> Same-day funding available
+      </span>
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
+        AI-powered loans <br>for <span class="text-gold">everyone.</span><br>
+        <span class="text-emerald2">Same-day funding.</span>
+      </h1>
+      <p class="mt-6 text-lg text-slate-200 max-w-xl">
+        SunCredit uses transparent machine learning to offer fair rates from <span class="font-semibold text-white">10–29% APR</span> on loans from <span class="font-semibold text-white">$500 to $50,000</span>. No hidden fees. Real underwriting. Real fast.
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3">
+        <a href="{{ url_for('register') }}" class="inline-flex justify-center items-center bg-emerald2 hover:bg-emerald2-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-emerald-900/30 transition">
+          Check my rate <i class="fa-solid fa-arrow-right ml-2"></i>
+        </a>
+        <a href="#how" class="inline-flex justify-center items-center bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-6 py-3 rounded-xl transition">
+          How it works
+        </a>
+      </div>
+      <p class="mt-4 text-xs text-slate-300/80">Checking your rate won't affect your credit score.</p>
+    </div>
+
+    <!-- Floating calculator -->
+    <div class="lg:justify-self-end w-full max-w-md">
+      <div class="bg-white text-slate-800 rounded-2xl shadow-2xl p-6 border border-white/40">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-navy text-lg"><i class="fa-solid fa-calculator text-emerald2 mr-2"></i>Loan calculator</h3>
+          <span class="text-xs text-slate-500">Estimate</span>
+        </div>
+        <label class="text-xs font-medium text-slate-500">Loan amount</label>
+        <div class="flex items-baseline gap-1">
+          <span class="text-3xl font-extrabold text-navy">$</span>
+          <span id="calc-amount" class="text-4xl font-extrabold text-navy">10,000</span>
+        </div>
+        <input id="calc-slider" type="range" min="500" max="50000" step="500" value="10000" class="w-full mt-2 accent-emerald2">
+        <div class="flex justify-between text-xs text-slate-400 mb-4"><span>$500</span><span>$50,000</span></div>
+
+        <label class="text-xs font-medium text-slate-500">Term</label>
+        <div class="grid grid-cols-5 gap-1 mt-1 mb-4">
+          {% for t in [12,24,36,48,60] %}
+          <button type="button" data-term="{{t}}" class="calc-term text-xs py-2 rounded-lg border border-slate-200 hover:border-emerald2 hover:bg-emerald-50 font-semibold {% if t==36 %}bg-emerald-50 border-emerald2 text-emerald2{% endif %}">{{t}}mo</button>
+          {% endfor %}
+        </div>
+
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <div class="flex justify-between text-sm mb-2"><span class="text-slate-500">Est. APR</span><span class="font-semibold" id="calc-apr">14.9%</span></div>
+          <div class="flex justify-between items-end">
+            <span class="text-slate-600 text-sm">Monthly payment</span>
+            <span class="text-3xl font-extrabold text-emerald2">$<span id="calc-monthly">346</span></span>
+          </div>
+        </div>
+        <a href="{{ url_for('register') }}" class="mt-4 block text-center bg-navy hover:bg-navy-700 text-white font-semibold py-3 rounded-xl">Get my real rate</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST INDICATORS -->
+<section class="bg-white border-y border-slate-100">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 text-sm text-slate-500">
+    <span class="font-semibold text-slate-700"><i class="fa-solid fa-shield-halved text-emerald2 mr-2"></i>TILA Compliant</span>
+    <span class="font-semibold text-slate-700"><i class="fa-solid fa-lock text-emerald2 mr-2"></i>GLBA Privacy</span>
+    <span class="font-semibold text-slate-700"><i class="fa-solid fa-id-card text-emerald2 mr-2"></i>NMLS #XXXXXXX</span>
+    <span class="font-semibold text-slate-700"><i class="fa-solid fa-scale-balanced text-emerald2 mr-2"></i>ECOA Fair Lending</span>
+    <span class="font-semibold text-slate-700"><i class="fa-solid fa-certificate text-emerald2 mr-2"></i>SOC 2 Type II</span>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="max-w-7xl mx-auto px-6 py-20">
+  <div class="text-center max-w-2xl mx-auto mb-14">
+    <h2 class="text-3xl sm:text-4xl font-extrabold text-navy">Built different. Built for you.</h2>
+    <p class="mt-3 text-slate-600">Modern underwriting that goes beyond a credit score.</p>
+  </div>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% set features = [
+      ('fa-brain','AI Underwriting','Production ML model with AUC 0.75+. Transparent, monitored, and fair.'),
+      ('fa-chart-line','Cash Flow Analysis','Connect your bank — we look at the real story, not just credit history.'),
+      ('fa-bolt','Same-day Funding','Approved before noon? Money in your account today.'),
+      ('fa-arrow-trend-down','Rate Improvement','Make 6 on-time payments and qualify for an automatic rate cut.')
+    ] %}
+    {% for icon, title, desc in features %}
+    <div class="bg-white rounded-2xl p-6 border border-slate-100 hover:border-emerald2 hover:shadow-lg transition group">
+      <div class="w-12 h-12 rounded-xl gradient-emerald flex items-center justify-center mb-4 group-hover:scale-110 transition">
+        <i class="fa-solid {{icon}} text-white text-lg"></i>
+      </div>
+      <h3 class="font-bold text-navy text-lg">{{title}}</h3>
+      <p class="text-slate-600 text-sm mt-1">{{desc}}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="bg-slate-50 py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-navy">How it works</h2>
+      <p class="mt-3 text-slate-600">Three steps. Minutes, not days.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 relative">
+      {% set steps = [
+        ('1','Check your rate','Answer a few questions. Soft pull only — no impact to your credit.'),
+        ('2','Connect & verify','Link your bank to unlock cash-flow underwriting and better rates.'),
+        ('3','Get funded','Accept your offer and we wire funds — usually the same business day.')
+      ] %}
+      {% for n, t, d in steps %}
+      <div class="bg-white rounded-2xl p-8 border border-slate-100 relative">
+        <div class="absolute -top-5 left-8 w-10 h-10 rounded-full gradient-navy text-white font-bold flex items-center justify-center shadow-lg">{{n}}</div>
+        <h3 class="font-bold text-navy text-xl mt-4">{{t}}</h3>
+        <p class="text-slate-600 mt-2">{{d}}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="max-w-7xl mx-auto px-6 py-20">
+  <div class="gradient-navy rounded-3xl p-10 lg:p-16 text-center text-white relative overflow-hidden">
+    <div class="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-emerald2/30 blur-3xl"></div>
+    <div class="absolute -left-20 -bottom-20 w-64 h-64 rounded-full bg-gold/20 blur-3xl"></div>
+    <h2 class="text-3xl sm:text-4xl font-extrabold relative">Ready in minutes.</h2>
+    <p class="mt-3 text-slate-200 relative">Apply now and see your real rate without affecting your credit.</p>
+    <a href="{{ url_for('register') }}" class="relative inline-flex mt-8 bg-emerald2 hover:bg-emerald2-700 px-8 py-4 rounded-xl font-bold shadow-xl shadow-black/20">Get started <i class="fa-solid fa-arrow-right ml-2"></i></a>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+  const slider = document.getElementById('calc-slider');
+  const amt = document.getElementById('calc-amount');
+  const monthly = document.getElementById('calc-monthly');
+  const aprEl = document.getElementById('calc-apr');
+  let term = 36, apr = 0.149;
+
+  function fmt(n) { return Math.round(n).toLocaleString(); }
+  function calc() {
+    const P = parseInt(slider.value);
+    amt.textContent = fmt(P);
+    const r = apr / 12;
+    const m = P * r / (1 - Math.pow(1 + r, -term));
+    monthly.textContent = fmt(m);
+    aprEl.textContent = (apr*100).toFixed(1) + '%';
+  }
+  slider.addEventListener('input', calc);
+  document.querySelectorAll('.calc-term').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.calc-term').forEach(x => x.classList.remove('bg-emerald-50','border-emerald2','text-emerald2'));
+      b.classList.add('bg-emerald-50','border-emerald2','text-emerald2');
+      term = parseInt(b.dataset.term);
+      calc();
+    });
+  });
+  calc();
+})();
+</script>
+{% endblock %}

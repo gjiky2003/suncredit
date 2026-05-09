@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Local DB and logs (will be re-created in production)
+*.db
+*.sqlite
+logs/
+*.log
+autopilot_status_last.json
+
+# Environment files (secrets — set in Render dashboard instead)
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp

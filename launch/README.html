@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌴 SunCredit — Launch Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+         background: #0f172a; color: #e2e8f0; line-height: 1.6; padding: 30px 20px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 2.2rem; color: #f0f0f0; }
+  h1 span { color: #059669; }
+  .subtitle { color: #94a3b8; font-size: 0.95rem; margin: 8px 0 30px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px; }
+  .stat { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; }
+  .stat .num { font-size: 2.4rem; font-weight: 700; color: #f0f0f0; }
+  .stat .lbl { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+  .stat.done .num { color: #10b981; }
+  .stat.in_progress .num { color: #f59e0b; }
+  .phase { margin-bottom: 36px; }
+  .phase h2 { font-size: 1.3rem; padding-bottom: 8px; border-bottom: 1px solid #334155;
+              display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .badge { font-size: 0.7rem; background: #334155; padding: 2px 10px; border-radius: 20px; color: #94a3b8; }
+  .checklist { display: flex; flex-direction: column; gap: 6px; }
+  .item { background: #1e293b; border: 1px solid #334155; border-radius: 8px;
+          padding: 14px 16px; display: flex; align-items: flex-start; gap: 14px;
+          cursor: pointer; transition: all 0.2s; }
+  .item:hover { border-color: #475569; background: #1e2a3f; }
+  .checkbox { width: 22px; height: 22px; border: 2px solid #64748b; border-radius: 5px;
+              flex-shrink: 0; margin-top: 2px; display: flex; align-items: center;
+              justify-content: center; font-size: 13px; }
+  .item.done { opacity: 0.65; }
+  .item.done .checkbox { background: #10b981; border-color: #10b981; color: #0f172a; }
+  .item.done .checkbox::after { content: "✓"; font-weight: bold; }
+  .details { flex: 1; }
+  .title { font-weight: 600; font-size: 0.95rem; }
+  .desc { color: #94a3b8; font-size: 0.85rem; margin-top: 3px; }
+  .link { color: #3b82f6; font-size: 0.82rem; margin-top: 3px; display: inline-block; text-decoration: none; }
+  .link:hover { text-decoration: underline; }
+  .item .badge2 { font-size: 0.7rem; padding: 2px 10px; border-radius: 20px; flex-shrink: 0; }
+  .item:not(.done) .badge2 { background: #334155; color: #94a3b8; }
+  .item.done .badge2 { background: #064e3b; color: #6ee7b7; }
+  .notes { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px; margin-bottom: 40px; }
+  .notes h3 { font-size: 1.05rem; color: #f0f0f0; margin-bottom: 12px; }
+  .notes ul { list-style: none; }
+  .notes ul li { padding: 6px 0; color: #94a3b8; font-size: 0.88rem; }
+  .notes ul li::before { content: "→ "; color: #059669; font-weight: bold; }
+  @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .reset { background: transparent; border: 1px solid #334155; color: #94a3b8;
+           padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+  .reset:hover { color: #f87171; border-color: #b91c1c; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div>
+      <h1>🌴 <span>SunCredit</span> — Launch Dashboard</h1>
+      <p class="subtitle">Complete operational checklist for the AI-native lending platform. Progress is saved automatically.</p>
+    </div>
+    <button class="reset" onclick="resetAll()">↻ Reset All</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="total">0</div><div class="lbl">Total Items</div></div>
+    <div class="stat done"><div class="num" id="done">0</div><div class="lbl">Completed</div></div>
+    <div class="stat in_progress"><div class="num" id="pct">0%</div><div class="lbl">Progress</div></div>
+    <div class="stat"><div class="num" id="remaining">0</div><div class="lbl">Remaining</div></div>
+  </div>
+
+  <!-- PHASE A -->
+  <div class="phase">
+    <h2>📋 Phase A — Legal & Banking <span class="badge">1-2 weeks</span></h2>
+    <div class="checklist">
+      <div class="item" data-key="a1"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Form SunCredit Lending LLC (Delaware)</div>
+          <div class="desc">File Certificate of Formation with Delaware Division of Corporations ($90)</div>
+          <a class="link" href="https://corp.delaware.gov/" target="_blank">corp.delaware.gov</a> · 
+          <a class="link" href="OPERATING_AGREEMENT.md">Operating Agreement template</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="a2"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Get EIN from IRS</div>
+          <div class="desc">Required for bank account, Stripe, taxes — free and instant</div>
+          <a class="link" href="https://www.irs.gov/ein" target="_blank">irs.gov/ein</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="a3"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Open Mercury business bank account</div>
+          <div class="desc">Fintech-friendly, no fees, supports Stripe</div>
+          <a class="link" href="https://mercury.com" target="_blank">mercury.com</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="a4"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Register for Stripe (Live Mode)</div>
+          <div class="desc">Sign up under LLC name + EIN. Get pk_live, sk_live, webhook secret.</div>
+          <a class="link" href="https://dashboard.stripe.com/register" target="_blank">dashboard.stripe.com/register</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="a5"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Hire registered agent in Delaware</div>
+          <div class="desc">Northwest Registered Agent ($50/yr) or LegalZoom</div>
+          <a class="link" href="https://northwestregisteredagent.com" target="_blank">northwestregisteredagent.com</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="a6"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Deposit initial capital ($15-25k)</div>
+          <div class="desc">Transfer from personal to LLC bank account — this funds first 5-10 loans</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE B -->
+  <div class="phase">
+    <h2>🔒 Phase B — Licensing & Compliance <span class="badge">2-6 weeks</span></h2>
+    <div class="checklist">
+      <div class="item" data-key="b1"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Create ALECS account (Texas OCCC portal)</div>
+          <div class="desc">First step for Regulated Lender License application</div>
+          <a class="link" href="https://occc.texas.gov/alecs" target="_blank">occc.texas.gov/alecs</a> ·
+          <a class="link" href="TEXAS_LICENSING_RESEARCH.md">Texas guide</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="b2"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Engage fintech attorney</div>
+          <div class="desc">Hudson Cook LLP recommended — consumer financial services specialists. Budget $3k-$8k.</div>
+          <a class="link" href="https://www.hudsoncook.com" target="_blank">hudsoncook.com</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="b3"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Submit Compliance Business Plan</div>
+          <div class="desc">11-section regulatory submission covering underwriting, compliance, collections</div>
+          <a class="link" href="COMPLIANCE_BUSINESS_PLAN.md">📄 Draft ready</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="b4"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Finalize Loan Contract</div>
+          <div class="desc">Plain-language contract per TFC Ch 342 + TAC Ch 90</div>
+          <a class="link" href="LOAN_CONTRACT.md">📄 Draft ready</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="b5"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Secure Surety Bond ($25k+)</div>
+          <div class="desc">Required by OCCC. ~$250-$1500/year. Use suretybonds.com</div>
+          <a class="link" href="SURETY_BOND_GUIDE.md">📄 Guide</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="b6"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Submit Texas OCCC License Application</div>
+          <div class="desc">$1,000 fee + bond + business plan + contract + credit check</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="b7"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">(Parallel) Outreach to lender partners</div>
+          <div class="desc">10+ target lenders for white-label arrangement — faster path to scale</div>
+          <a class="link" href="LENDER_PARTNERSHIP_OUTREACH.md">📄 Outreach list</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="b8"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Choose KYC vendor</div>
+          <div class="desc">Stripe Identity recommended for pilot phase ($1.50-$3 per check)</div>
+          <a class="link" href="KYC_VENDOR_EVAL.md">📄 Evaluation</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE C -->
+  <div class="phase">
+    <h2>⚙️ Phase C — Platform Configuration <span class="badge">1-2 weeks</span></h2>
+    <div class="checklist">
+      <div class="item" data-key="c1"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Set Stripe live keys in environment</div>
+          <div class="desc">Add STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET to .env</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="c2"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Configure Stripe Identity for KYC</div>
+          <div class="desc">Already integrated — just enable in Stripe dashboard</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="c3"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Set up SendGrid (or AWS SES) for email</div>
+          <div class="desc">Add SENDGRID_API_KEY + verify domain email</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="c4"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Buy suncredit.com domain + DNS</div>
+          <div class="desc">Cloudflare Registrar or Namecheap (~$15/yr)</div>
+          <a class="link" href="DOMAIN_SETUP.md">📄 Domain setup guide</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="c5"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Set up HTTPS (Nginx + Let's Encrypt or Cloudflare Tunnel)</div>
+          <div class="desc">Required for Stripe webhook + production traffic</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="c6"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Run E2E test suite with live credentials</div>
+          <div class="desc">Verify register → apply → score → KYC → fund → payment all work</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE D -->
+  <div class="phase">
+    <h2>💰 Phase D — Capital & First Loans <span class="badge">2-4 weeks</span></h2>
+    <div class="checklist">
+      <div class="item" data-key="d1"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Find 5-10 pilot borrowers</div>
+          <div class="desc">Friends, family, network — explain it's a real loan with real terms</div>
+          <a class="link" href="PILOT_LOANS_GUIDE.md">📄 Pilot guide</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="d2"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Fund first loan end-to-end</div>
+          <div class="desc">Test the full live cycle: register → apply → KYC → approve → disburse → first payment</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="d3"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Track every loan in portfolio tracker</div>
+          <div class="desc">Log amount, APR, tier, payment history in CSV</div>
+          <a class="link" href="PILOT_PORTFOLIO_TRACKER.csv">📊 Tracker CSV</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="d4"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Document loss curves at 10-loan mark</div>
+          <div class="desc">Investor-grade data for raising debt facility</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="d5"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Pitch debt facility to investor (Phase 1: $250k)</div>
+          <div class="desc">14-slide pitch deck ready, PPM drafted</div>
+          <a class="link" href="SunCredit_Pitch_Deck.pptx">📄 Pitch deck (.pptx)</a> ·
+          <a class="link" href="PRIVATE_PLACEMENT_MEMO.md">📄 PPM</a>
+        </div>
+        <div class="badge2">Pending</div></div>
+      <div class="item" data-key="d6"><div class="checkbox"></div>
+        <div class="details">
+          <div class="title">Scale to 50+ loans</div>
+          <div class="desc">Multi-state expansion + raise next round</div>
+        </div>
+        <div class="badge2">Pending</div></div>
+    </div>
+  </div>
+
+  <!-- Resources -->
+  <div class="notes">
+    <h3>📁 Documents in this folder</h3>
+    <ul>
+      <li><strong>OPERATING_AGREEMENT.md</strong> — LLC formation</li>
+      <li><strong>COMPLIANCE_BUSINESS_PLAN.md</strong> — Texas OCCC submission</li>
+      <li><strong>LOAN_CONTRACT.md</strong> — Plain-language loan agreement</li>
+      <li><strong>SunCredit_Pitch_Deck.pptx</strong> — 14-slide investor deck</li>
+      <li><strong>PRIVATE_PLACEMENT_MEMO.md</strong> — Fundraising memo</li>
+      <li><strong>TEXAS_LICENSING_RESEARCH.md</strong> — License process</li>
+      <li><strong>SURETY_BOND_GUIDE.md</strong> — Bond procurement</li>
+      <li><strong>KYC_VENDOR_EVAL.md</strong> — Stripe Identity vs Persona vs Onfido</li>
+      <li><strong>LENDER_PARTNERSHIP_OUTREACH.md</strong> — White-label outreach</li>
+      <li><strong>PILOT_LOANS_GUIDE.md</strong> — First-loans operations</li>
+      <li><strong>PILOT_PORTFOLIO_TRACKER.csv</strong> — Performance tracker</li>
+      <li><strong>DOMAIN_SETUP.md</strong> — Production hosting</li>
+      <li><strong>SECURITY_AUDIT.md</strong> — Security findings + fixes</li>
+      <li><strong>email_templates/</strong> — 6 transactional email templates</li>
+    </ul>
+    <h3 style="margin-top: 16px;">⚠️ Critical Notes</h3>
+    <ul>
+      <li><strong>Don't lend to strangers without a license.</strong> Friends/family under exemptions only.</li>
+      <li><strong>AUC 0.71 is your moat.</strong> Lead every conversation with this.</li>
+      <li>Run the licensed-lender partnership track in PARALLEL with your own license.</li>
+      <li>Save all receipts — LLC formation, EIN, bank, Stripe fees are deductible.</li>
+      <li>The first 10 loans are about <em>proving loss curves</em>, not making profit.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'suncredit_checklist_v1';
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+function save(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function update() {
+  const items = document.querySelectorAll('.item');
+  const total = items.length;
+  let done = 0;
+  items.forEach(item => { if (item.classList.contains('done')) done++; });
+  document.getElementById('total').textContent = total;
+  document.getElementById('done').textContent = done;
+  document.getElementById('remaining').textContent = total - done;
+  document.getElementById('pct').textContent = Math.round(100 * done / total) + '%';
+}
+function init() {
+  const state = load();
+  document.querySelectorAll('.item').forEach(item => {
+    const key = item.dataset.key;
+    if (state[key]) {
+      item.classList.add('done');
+      item.querySelector('.badge2').textContent = '✓ Done';
+    }
+    item.addEventListener('click', e => {
+      if (e.target.tagName === 'A') return;
+      item.classList.toggle('done');
+      const isDone = item.classList.contains('done');
+      const badge = item.querySelector('.badge2');
+      badge.textContent = isDone ? '✓ Done' : 'Pending';
+      const s = load();
+      if (isDone) s[key] = true; else delete s[key];
+      save(s);
+      update();
+    });
+  });
+  update();
+}
+function resetAll() {
+  if (confirm('Reset all checklist progress?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+init();
+</script>
+</body>
+</html>

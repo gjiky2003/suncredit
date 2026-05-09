@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}Apply — SunCredit{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
+  <div class="text-center mb-8">
+    <h1 class="text-3xl font-extrabold text-navy">Loan application</h1>
+    <p class="text-slate-500 mt-1">Step {{ step }} of 5 — takes about 5 minutes.</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="flex items-center justify-between mb-10 px-2">
+    {% for i in range(1, 6) %}
+      {% set done = i < step %}
+      {% set current = i == step %}
+      <div class="flex items-center {% if not loop.last %}flex-1{% endif %}">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 shrink-0
+          {% if done %}bg-emerald2 border-emerald2 text-white
+          {% elif current %}bg-white border-emerald2 text-emerald2
+          {% else %}bg-white border-slate-200 text-slate-400{% endif %}">
+          {% if done %}<i class="fa-solid fa-check"></i>{% else %}{{ i }}{% endif %}
+        </div>
+        {% if not loop.last %}
+        <div class="h-1 flex-1 mx-1 rounded-full {% if i < step %}bg-emerald2{% else %}bg-slate-200{% endif %}"></div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="grid grid-cols-5 text-[10px] sm:text-xs text-center text-slate-500 -mt-7 mb-6 px-1">
+    <span>Identity</span><span>Employment</span><span>Financial</span><span>Loan</span><span>Review</span>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for c, m in messages %}<div class="mb-4 rounded-lg px-4 py-3 text-sm {% if c=='danger' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-sky-50 text-sky-700 border border-sky-200{% endif %}">{{ m }}</div>{% endfor %}{% endif %}
+  {% endwith %}
+
+  <form method="POST" action="{{ url_for('apply') }}" enctype="multipart/form-data" class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8">
+    <input type="hidden" name="step" value="{{ step }}">
+
+    {# ───── STEP 1: Identity ───── #}
+    {% if step == 1 %}
+    <h2 class="text-xl font-bold text-navy mb-1"><i class="fa-solid fa-id-badge text-emerald2 mr-2"></i>Your identity</h2>
+    <p class="text-sm text-slate-500 mb-6">We use this to verify it's really you.</p>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div><label class="text-xs font-semibold text-slate-600">Legal first name</label>
+        <input name="first_name" required value="{{ data.get('first_name','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Legal last name</label>
+        <input name="last_name" required value="{{ data.get('last_name','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Date of birth</label>
+        <input name="dob" type="date" required value="{{ data.get('dob','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none"></div>
+      <div><label class="text-xs font-semibold text-slate-600">SSN — last 4 digits only</label>
+        <input name="ssn_last4" required maxlength="4" pattern="\d{4}" inputmode="numeric" value="{{ data.get('ssn_last4','') }}" placeholder="••••" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 tracking-widest focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none"></div>
+      <div class="sm:col-span-2"><label class="text-xs font-semibold text-slate-600">Phone</label>
+        <input name="phone" type="tel" required value="{{ data.get('phone','') }}" placeholder="(555) 555-5555" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald2/30 focus:border-emerald2 outline-none"></div>
+    </div>
+
+    {# ───── STEP 2: Employment ───── #}
+    {% elif step == 2 %}
+    <h2 class="text-xl font-bold text-navy mb-1"><i class="fa-solid fa-briefcase text-emerald2 mr-2"></i>Employment & address</h2>
+    <p class="text-sm text-slate-500 mb-6">Helps us assess your stability.</p>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div><label class="text-xs font-semibold text-slate-600">Employer name</label>
+        <input name="employer_name" value="{{ data.get('employer_name','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Employer phone</label>
+        <input name="employer_phone" type="tel" value="{{ data.get('employer_phone','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Employment status</label>
+        <select name="employment_status" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-white">
+          {% for v,l in [('full-time','Full-time'),('part-time','Part-time'),('self-employed','Self-employed'),('contractor','Contractor'),('retired','Retired'),('unemployed','Unemployed')] %}
+            <option value="{{v}}" {% if data.get('employment_status')==v %}selected{% endif %}>{{l}}</option>
+          {% endfor %}
+        </select></div>
+      <div><label class="text-xs font-semibold text-slate-600">Length of employment (months)</label>
+        <input name="employment_length_months" type="number" min="0" value="{{ data.get('employment_length_months','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div class="sm:col-span-2"><label class="text-xs font-semibold text-slate-600">Street address</label>
+        <input name="address" value="{{ data.get('address','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div><label class="text-xs font-semibold text-slate-600">City</label>
+        <input name="city" value="{{ data.get('city','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-xs font-semibold text-slate-600">State</label>
+          <input name="state" maxlength="2" value="{{ data.get('state','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 uppercase"></div>
+        <div><label class="text-xs font-semibold text-slate-600">ZIP</label>
+          <input name="zip" maxlength="5" value="{{ data.get('zip','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      </div>
+      <div><label class="text-xs font-semibold text-slate-600">Home ownership</label>
+        <select name="home_ownership" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-white">
+          {% for v,l in [('rent','Rent'),('mortgage','Mortgage'),('own','Own outright')] %}
+            <option value="{{v}}" {% if data.get('home_ownership')==v %}selected{% endif %}>{{l}}</option>
+          {% endfor %}
+        </select></div>
+      <div><label class="text-xs font-semibold text-slate-600">Monthly housing payment ($)</label>
+        <input name="housing_payment" type="number" min="0" step="50" value="{{ data.get('housing_payment','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+    </div>
+
+    {# ───── STEP 3: Financial ───── #}
+    {% elif step == 3 %}
+    <h2 class="text-xl font-bold text-navy mb-1"><i class="fa-solid fa-chart-line text-emerald2 mr-2"></i>Financial profile</h2>
+    <p class="text-sm text-slate-500 mb-6">No exact credit score? No problem — pick a range.</p>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div><label class="text-xs font-semibold text-slate-600">Annual income ($)</label>
+        <input name="annual_income" type="number" min="0" step="1000" required value="{{ data.get('annual_income','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Total monthly debt payments ($)</label>
+        <input name="monthly_debt" type="number" min="0" step="50" value="{{ data.get('monthly_debt','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Credit score range</label>
+        <select name="credit_score_bucket" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-white">
+          {% for v,l in [('bad','<580'),('poor','580-619'),('fair','620-659'),('good','660-699'),('good','700-739'),('excellent','740+')] %}
+            <option value="{{v}}" {% if data.get('credit_score_bucket')==v %}selected{% endif %}>{{l}}</option>
+          {% endfor %}
+        </select></div>
+      <div><label class="text-xs font-semibold text-slate-600">Credit utilization</label>
+        <select name="utilization_bucket" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-white">
+          {% for v,l in [('low','<10%'),('low','10-25%'),('medium','25-45%'),('high','45-65%'),('maxed','65%+')] %}
+            <option value="{{v}}" {% if data.get('utilization_bucket')==v %}selected{% endif %}>{{l}}</option>
+          {% endfor %}
+        </select></div>
+      <div><label class="text-xs font-semibold text-slate-600">Number of derogatory marks</label>
+        <input name="num_derogatory" type="number" min="0" value="{{ data.get('num_derogatory','0') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Number of credit lines</label>
+        <input name="num_credit_lines" type="number" min="0" value="{{ data.get('num_credit_lines','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Bank routing #</label>
+        <input name="bank_routing" maxlength="9" pattern="\d{9}" value="{{ data.get('bank_routing','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 font-mono"></div>
+      <div><label class="text-xs font-semibold text-slate-600">Bank account #</label>
+        <input name="bank_account" value="{{ data.get('bank_account','') }}" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 font-mono"></div>
+    </div>
+
+    {# ───── STEP 4: Loan ───── #}
+    {% elif step == 4 %}
+    <h2 class="text-xl font-bold text-navy mb-1"><i class="fa-solid fa-sack-dollar text-emerald2 mr-2"></i>Your loan</h2>
+    <p class="text-sm text-slate-500 mb-6">Choose how much you need and the term.</p>
+
+    <div class="bg-slate-50 rounded-xl p-5 mb-5 border border-slate-100">
+      <div class="flex justify-between items-baseline mb-2">
+        <label class="text-xs font-semibold text-slate-600">Loan amount</label>
+        <span class="text-2xl font-extrabold text-navy">$<span id="loan_amount_display">{{ data.get('loan_amount','10000') }}</span></span>
+      </div>
+      <input type="range" min="500" max="50000" step="500" value="{{ data.get('loan_amount','10000') }}"
+             oninput="document.getElementById('loan_amount_hidden').value=this.value;document.getElementById('loan_amount_display').textContent=Number(this.value).toLocaleString();"
+             class="w-full accent-emerald2">
+      <div class="flex justify-between text-xs text-slate-400"><span>$500</span><span>$50,000</span></div>
+      <input type="hidden" id="loan_amount_hidden" name="loan_amount" value="{{ data.get('loan_amount','10000') }}">
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div><label class="text-xs font-semibold text-slate-600">Purpose</label>
+        <select name="loan_purpose" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-white">
+          {% for v,l in [('debt_consolidation','Debt consolidation'),('home_improvement','Home improvement'),('medical','Medical'),('major_purchase','Major purchase'),('auto','Auto'),('vacation','Vacation'),('wedding','Wedding'),('business','Business'),('education','Education'),('other','Other')] %}
+            <option value="{{v}}" {% if data.get('loan_purpose')==v %}selected{% endif %}>{{l}}</option>
+          {% endfor %}
+        </select></div>
+      <div><label class="text-xs font-semibold text-slate-600">Term (months)</label>
+        <select name="term_months" class="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-white">
+          {% for t in [12,24,36,48,60] %}
+            <option value="{{t}}" {% if data.get('term_months')|int == t %}selected{% endif %}>{{t}} months</option>
+          {% endfor %}
+        </select></div>
+    </div>
+
+    <div class="mt-6">
+      <p class="text-xs font-semibold text-slate-600 mb-2">Optional documents</p>
+      <div class="grid sm:grid-cols-2 gap-3">
+        {% for label, name in [('Most recent pay stub','paystub'), ('W-2 or 1099','w2')] %}
+        <label class="cursor-pointer block border-2 border-dashed border-slate-200 hover:border-emerald2 rounded-xl p-5 text-center transition">
+          <i class="fa-solid fa-cloud-arrow-up text-2xl text-emerald2"></i>
+          <p class="font-semibold text-slate-700 mt-2 text-sm">{{label}}</p>
+          <p class="text-xs text-slate-400">PDF, JPG, PNG</p>
+          <input type="file" name="{{name}}" class="hidden">
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# ───── STEP 5: Review ───── #}
+    {% elif step == 5 %}
+    <h2 class="text-xl font-bold text-navy mb-1"><i class="fa-solid fa-clipboard-check text-emerald2 mr-2"></i>Review & submit</h2>
+    <p class="text-sm text-slate-500 mb-6">Please verify everything below before submitting.</p>
+
+    {% set sections = [
+      ('Identity', [('First name','first_name'),('Last name','last_name'),('Date of birth','dob'),('SSN (last 4)','ssn_last4'),('Phone','phone')]),
+      ('Employment', [('Employer','employer_name'),('Employer phone','employer_phone'),('Status','employment_status'),('Length (months)','employment_length_months'),('Address','address'),('City','city'),('State','state'),('ZIP','zip'),('Home ownership','home_ownership'),('Housing payment','housing_payment')]),
+      ('Financial', [('Annual income','annual_income'),('Monthly debt','monthly_debt'),('Credit score','credit_score_bucket'),('Utilization','utilization_bucket'),('Derogatory marks','num_derogatory'),('Credit lines','num_credit_lines'),('Bank routing','bank_routing'),('Bank account','bank_account')]),
+      ('Loan', [('Amount','loan_amount'),('Purpose','loan_purpose'),('Term (months)','term_months')]),
+    ] %}
+    <div class="space-y-4">
+    {% for section_name, fields in sections %}
+      <div class="border border-slate-100 rounded-xl overflow-hidden">
+        <div class="bg-slate-50 px-4 py-2 font-semibold text-navy text-sm">{{section_name}}</div>
+        <dl class="divide-y divide-slate-100">
+        {% for label, key in fields %}
+          <div class="flex justify-between px-4 py-2 text-sm"><dt class="text-slate-500">{{label}}</dt><dd class="font-medium text-slate-800 text-right">{{ data.get(key) or '—' }}</dd></div>
+        {% endfor %}
+        </dl>
+      </div>
+    {% endfor %}
+    </div>
+
+    <label class="flex items-start gap-3 mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+      <input type="checkbox" name="confirm" value="1" required class="mt-1 accent-emerald2">
+      <span class="text-sm text-slate-700">I certify the information provided is true and complete. I authorize SunCredit to obtain a credit report and verify my information. I agree to the <a href="/terms" class="text-emerald2 underline">Terms</a> and <a href="/privacy" class="text-emerald2 underline">Privacy Policy</a>.</span>
+    </label>
+    {% endif %}
+
+    <!-- Nav -->
+    <div class="flex justify-between mt-8 pt-6 border-t border-slate-100">
+      {% if step > 1 %}
+        <a href="{{ url_for('apply', step=step-1) }}" class="px-5 py-2.5 rounded-lg border border-slate-200 hover:border-navy text-slate-700 font-semibold"><i class="fa-solid fa-arrow-left mr-1"></i>Back</a>
+      {% else %}<span></span>{% endif %}
+      <button type="submit" class="px-6 py-2.5 rounded-lg bg-emerald2 hover:bg-emerald2-700 text-white font-semibold shadow">
+        {% if step == 5 %}Submit Application <i class="fa-solid fa-paper-plane ml-1"></i>{% else %}Continue <i class="fa-solid fa-arrow-right ml-1"></i>{% endif %}
+      </button>
+    </div>
+  </form>
+
+  <p class="text-center text-xs text-slate-400 mt-6"><i class="fa-solid fa-lock mr-1"></i>Bank-grade encryption. Your data is safe.</p>
+</div>
+{% endblock %}

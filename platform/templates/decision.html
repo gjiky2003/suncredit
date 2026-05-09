@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Your decision — SunCredit{% endblock %}
+
+{% block content %}
+{% set result = decision if decision is defined else (result if result is defined else {}) %}
+{% set approved = approved if approved is defined else result.get('approved') %}
+{% set reasons = result.get('decision_reasons') or result.get('reasons') or [] %}
+{% set apr = (result.get('interest_rate') or 0)|float %}
+{% set mp = (result.get('monthly_payment') or 0)|float %}
+{% set fee = (result.get('origination_fee') or 0)|float %}
+{% set tier = result.get('risk_tier','—') %}
+{% set score = result.get('risk_score','—') %}
+{% set principal = (data.get('loan_amount') if data is defined else 0)|float %}
+{% set term = (data.get('term_months') if data is defined else 36)|int %}
+
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+
+{% if approved %}
+  <div class="bg-white rounded-3xl border border-emerald-100 shadow-xl overflow-hidden">
+    <div class="gradient-emerald text-white p-8 sm:p-12 text-center relative">
+      <div class="w-20 h-20 mx-auto rounded-full bg-white/20 flex items-center justify-center mb-4">
+        <i class="fa-solid fa-circle-check text-5xl"></i>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold">You're approved! 🎉</h1>
+      <p class="mt-3 text-emerald-50 text-lg">Here are your personalized loan terms.</p>
+    </div>
+
+    <div class="p-8 sm:p-10">
+      <div class="grid sm:grid-cols-2 gap-6 mb-6">
+        <div class="bg-slate-50 rounded-2xl p-6 text-center">
+          <p class="text-xs uppercase tracking-wider text-slate-500">Loan amount</p>
+          <p class="text-4xl font-extrabold text-navy mt-1">${{ '{:,.0f}'.format(principal) }}</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-6 text-center">
+          <p class="text-xs uppercase tracking-wider text-slate-500">APR</p>
+          <p class="text-4xl font-extrabold text-emerald2 mt-1">{{ '%.2f'|format(apr*100) }}%</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-6 text-center">
+          <p class="text-xs uppercase tracking-wider text-slate-500">Monthly payment</p>
+          <p class="text-4xl font-extrabold text-navy mt-1">${{ '{:,.2f}'.format(mp) }}</p>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-6 text-center">
+          <p class="text-xs uppercase tracking-wider text-slate-500">Term</p>
+          <p class="text-4xl font-extrabold text-navy mt-1">{{ term }} <span class="text-base font-bold">mo</span></p>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-sm">
+        <p class="font-semibold text-amber-900"><i class="fa-solid fa-circle-info mr-1"></i>Disclosure (TILA)</p>
+        <p class="text-amber-800 mt-1">Origination fee: <span class="font-semibold">${{ '{:,.2f}'.format(fee) }}</span> · Risk tier: <span class="font-semibold uppercase">{{ tier }}</span> · Risk score: <span class="font-semibold">{{ score }}</span>. Total of payments over the term will exceed the principal due to interest.</p>
+      </div>
+
+      <form method="POST" action="/accept-loan/{{ application_id }}">
+        <button class="w-full bg-emerald2 hover:bg-emerald2-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-900/20 text-lg">
+          Accept Loan <i class="fa-solid fa-arrow-right ml-2"></i>
+        </button>
+      </form>
+      <a href="{{ url_for('dashboard') }}" class="block text-center text-sm text-slate-500 hover:text-navy mt-4">Decide later — go to dashboard</a>
+    </div>
+  </div>
+
+{% else %}
+  <div class="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden">
+    <div class="bg-slate-100 p-8 sm:p-12 text-center">
+      <div class="w-20 h-20 mx-auto rounded-full bg-white flex items-center justify-center mb-4 shadow">
+        <i class="fa-solid fa-circle-info text-5xl text-navy"></i>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-navy">We can't approve you today</h1>
+      <p class="mt-3 text-slate-600 max-w-md mx-auto">We know this isn't the answer you wanted. Here's what's behind our decision — and what you can do next.</p>
+    </div>
+
+    <div class="p-8 sm:p-10">
+      {% if reasons %}
+      <h3 class="font-bold text-navy mb-3">Reasons (Adverse Action Notice)</h3>
+      <ul class="space-y-2 mb-6">
+        {% for r in reasons %}
+        <li class="flex gap-3 items-start bg-red-50 border border-red-100 rounded-lg p-3 text-sm text-red-800"><i class="fa-solid fa-circle-exclamation mt-0.5"></i><span>{{ r }}</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <h3 class="font-bold text-navy mb-3"><i class="fa-solid fa-arrow-trend-up text-emerald2 mr-1"></i>How to improve and reapply</h3>
+      <ul class="space-y-2 text-sm text-slate-700">
+        <li class="flex gap-2"><i class="fa-solid fa-check text-emerald2 mt-1"></i>Pay down credit-card balances to reduce utilization below 30%.</li>
+        <li class="flex gap-2"><i class="fa-solid fa-check text-emerald2 mt-1"></i>Make every payment on time for the next 90 days.</li>
+        <li class="flex gap-2"><i class="fa-solid fa-check text-emerald2 mt-1"></i><a href="{{ url_for('connect_bank') }}" class="text-emerald2 underline">Connect your bank</a> — cash-flow data can change the outcome.</li>
+        <li class="flex gap-2"><i class="fa-solid fa-check text-emerald2 mt-1"></i>Consider applying for a smaller amount or longer term.</li>
+      </ul>
+
+      <div class="mt-8 grid sm:grid-cols-2 gap-3">
+        <a href="{{ url_for('connect_bank') }}" class="text-center bg-navy hover:bg-navy-700 text-white font-semibold py-3 rounded-xl">Connect bank to retry</a>
+        <a href="{{ url_for('dashboard') }}" class="text-center border border-slate-200 hover:border-navy text-navy font-semibold py-3 rounded-xl">Back to dashboard</a>
+      </div>
+      <p class="text-xs text-slate-400 mt-6 text-center">You have the right to a free copy of your credit report. ECOA prohibits discrimination on protected bases.</p>
+    </div>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

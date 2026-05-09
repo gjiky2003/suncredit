@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · SunCredit Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    .badge { display:inline-flex; align-items:center; gap:.25rem; padding:.125rem .5rem; border-radius:9999px; font-size:.7rem; font-weight:600; }
+    .badge-green { background:#d1fae5; color:#065f46; }
+    .badge-yellow { background:#fef3c7; color:#92400e; }
+    .badge-red { background:#fee2e2; color:#991b1b; }
+    .badge-gray { background:#e2e8f0; color:#334155; }
+    .badge-blue { background:#dbeafe; color:#1e40af; }
+    table.striped tbody tr:nth-child(odd) { background:#f8fafc; }
+    table.sticky-head thead th { position:sticky; top:0; background:#f1f5f9; z-index:1; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<aside class="w-64 fixed inset-y-0 left-0 bg-slate-900 border-r border-slate-800 flex flex-col z-30">
+  <div class="px-6 py-5 border-b border-slate-800">
+    <div class="flex items-center gap-2">
+      <div class="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center"><i class="fa-solid fa-shield-halved text-white"></i></div>
+      <div><div class="text-white font-bold leading-tight">SunCredit</div><div class="text-emerald-500 text-xs font-semibold tracking-wider">ADMIN</div></div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+<a href="/admin" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition bg-emerald-600 text-white shadow-md shadow-emerald-600/20"><i class="fa-solid fa-gauge-high w-5"></i>Dashboard</a>
+<a href="/admin/portfolio" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-chart-pie w-5"></i>Portfolio</a>
+<a href="/admin/applications" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-file-lines w-5"></i>Applications</a>
+<a href="/admin/loans" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-hand-holding-dollar w-5"></i>Loans</a>
+<a href="/admin/borrowers" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-users w-5"></i>Borrowers</a>
+<a href="/admin/collections" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-money-bill-transfer w-5"></i>Collections</a>
+<a href="/admin/kyc" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-id-card w-5"></i>KYC</a>
+<a href="/admin/settings" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-gear w-5"></i>Settings</a>
+  </nav>
+  <div class="px-3 py-3 border-t border-slate-800">
+    <a href="/admin/logout" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-red-950/40 hover:text-red-300 transition"><i class="fa-solid fa-right-from-bracket w-5"></i>Logout</a>
+  </div>
+</aside>
+<main class="ml-64 min-h-screen">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="px-8 pt-6 space-y-2">
+        {% for category, msg in messages %}
+          <div class="px-4 py-3 rounded-lg text-sm border flex items-start gap-2
+            {% if category == 'error' %}bg-red-50 border-red-200 text-red-800
+            {% elif category == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+            {% else %}bg-slate-100 border-slate-200 text-slate-700{% endif %}">
+            <i class="fa-solid fa-circle-info mt-0.5"></i><div>{{ msg }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+<div class="px-8 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
+      <p class="text-sm text-slate-500">Overview of platform health · auto-refreshes every 30s</p>
+    </div>
+    <div class="flex gap-2">
+      <form method="POST" action="/admin/collections/run-cycle" class="inline">
+        <button class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-medium"><i class="fa-solid fa-rotate mr-2"></i>Run Collections Cycle</button>
+      </form>
+      <a href="/admin/applications?status=pending" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium"><i class="fa-solid fa-check-double mr-2"></i>Approve Pending</a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 font-semibold uppercase">Total Loans</div>
+      <div class="text-2xl font-bold text-slate-900 mt-1" data-stat="total_loans">{{ stats.total_loans or 0 }}</div>
+      <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-hand-holding-dollar text-emerald-600"></i> all-time</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 font-semibold uppercase">Active Loans</div>
+      <div class="text-2xl font-bold text-emerald-700 mt-1" data-stat="active_loans">{{ stats.active_loans or 0 }}</div>
+      <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-circle-check"></i> currently performing</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 font-semibold uppercase">Total Originated</div>
+      <div class="text-2xl font-bold text-slate-900 mt-1" data-stat="total_originated">${{ '{:,.0f}'.format(stats.total_originated or 0) }}</div>
+      <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-chart-line text-emerald-600"></i> lifetime</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 font-semibold uppercase">Portfolio Balance</div>
+      <div class="text-2xl font-bold text-slate-900 mt-1" data-stat="portfolio_balance">${{ '{:,.0f}'.format(stats.portfolio_balance or 0) }}</div>
+      <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-wallet text-emerald-600"></i> outstanding</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 font-semibold uppercase">Overdue Loans</div>
+      <div class="text-2xl font-bold text-red-600 mt-1" data-stat="overdue_loans">{{ stats.overdue_loans or 0 }}</div>
+      <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-triangle-exclamation text-red-500"></i> past due</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+      <div class="text-xs text-slate-500 font-semibold uppercase">Default Rate</div>
+      <div class="text-2xl font-bold text-slate-900 mt-1" data-stat="default_rate">{{ '%.2f'|format(stats.default_rate or 0) }}%</div>
+      <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-percent text-amber-600"></i> trailing 12mo</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+        <h2 class="font-semibold text-slate-900"><i class="fa-solid fa-file-lines text-emerald-600 mr-2"></i>Pending Applications</h2>
+        <a href="/admin/applications" class="text-xs text-emerald-600 hover:text-emerald-700 font-medium">View all →</a>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm striped">
+          <thead class="bg-slate-100 text-xs uppercase text-slate-600">
+            <tr><th class="text-left px-4 py-2">ID</th><th class="text-left px-4 py-2">Borrower</th><th class="text-right px-4 py-2">Amount</th><th class="text-center px-4 py-2">Score</th><th class="text-center px-4 py-2">Tier</th><th class="text-right px-4 py-2">Submitted</th><th class="text-center px-4 py-2">Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for app in pending_apps %}
+            <tr class="border-t border-slate-100">
+              <td class="px-4 py-2 font-mono text-xs text-slate-500">#{{ app.id }}</td>
+              <td class="px-4 py-2 font-medium">{{ app.borrower_name }}</td>
+              <td class="px-4 py-2 text-right">${{ '{:,.0f}'.format(app.amount or 0) }}</td>
+              <td class="px-4 py-2 text-center">{{ app.risk_score or '—' }}</td>
+              <td class="px-4 py-2 text-center"><span class="badge badge-blue">{{ app.tier or '—' }}</span></td>
+              <td class="px-4 py-2 text-right text-xs text-slate-500">{{ app.submitted_at }}</td>
+              <td class="px-4 py-2 text-center">
+                <a href="/admin/applications/{{ app.id }}" class="text-emerald-600 hover:text-emerald-700"><i class="fa-solid fa-eye"></i></a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">No pending applications</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+      <div class="px-5 py-4 border-b border-slate-200">
+        <h2 class="font-semibold text-slate-900"><i class="fa-solid fa-clock-rotate-left text-emerald-600 mr-2"></i>Recent Activity</h2>
+      </div>
+      <ul class="divide-y divide-slate-100 max-h-[500px] overflow-y-auto">
+        {% for ev in recent_activity %}
+        <li class="px-5 py-3 hover:bg-slate-50">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-circle-dot text-xs"></i></div>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm text-slate-800">{{ ev.action }}</div>
+              <div class="text-xs text-slate-500 mt-0.5">{{ ev.actor or 'system' }} · {{ ev.created_at }}</div>
+              {% if ev.detail %}<div class="text-xs text-slate-400 mt-1 truncate">{{ ev.detail }}</div>{% endif %}
+            </div>
+          </div>
+        </li>
+        {% else %}
+        <li class="px-5 py-8 text-center text-slate-400 text-sm">No recent activity</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+async function refreshStats() {
+  try {
+    const r = await fetch('/admin/api/stats');
+    if (!r.ok) return;
+    const data = await r.json();
+    for (const [k, v] of Object.entries(data)) {
+      const el = document.querySelector(`[data-stat="${k}"]`);
+      if (el) {
+        if (k.includes('originated') || k.includes('balance')) el.textContent = '$' + Number(v).toLocaleString(undefined,{maximumFractionDigits:0});
+        else if (k === 'default_rate') el.textContent = Number(v).toFixed(2) + '%';
+        else el.textContent = v;
+      }
+    }
+  } catch(e) {}
+}
+setInterval(refreshStats, 30000);
+</script>
+
+</main>
+</body>
+</html>

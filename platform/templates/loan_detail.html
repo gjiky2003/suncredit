@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Loan #{{ loan['id'] }} — SunCredit{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+
+  <div class="flex items-center gap-3 text-sm">
+    <a href="{{ url_for('dashboard') }}" class="text-slate-500 hover:text-navy"><i class="fa-solid fa-arrow-left mr-1"></i>Dashboard</a>
+    <span class="text-slate-300">/</span>
+    <span class="text-navy font-semibold">Loan #{{ loan['id'] }}</span>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for c, m in messages %}<div class="rounded-lg px-4 py-3 text-sm {% if c=='success' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% else %}bg-sky-50 text-sky-700 border border-sky-200{% endif %}">{{ m }}</div>{% endfor %}{% endif %}
+  {% endwith %}
+
+  <!-- Loan terms -->
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="gradient-navy text-white p-6 grid sm:grid-cols-4 gap-4">
+      <div>
+        <p class="text-xs uppercase text-slate-300">Principal</p>
+        <p class="text-2xl font-extrabold">${{ '{:,.2f}'.format(loan['principal']|float) }}</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase text-slate-300">Remaining</p>
+        <p class="text-2xl font-extrabold text-gold">${{ '{:,.2f}'.format(loan['remaining_balance']|float) }}</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase text-slate-300">APR</p>
+        <p class="text-2xl font-extrabold text-emerald2">{{ '%.2f'|format(loan['interest_rate']|float * 100) }}%</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase text-slate-300">Term</p>
+        <p class="text-2xl font-extrabold">{{ loan['term_months'] }} mo</p>
+      </div>
+    </div>
+    <div class="p-6 grid sm:grid-cols-3 gap-4 items-center">
+      <div><p class="text-xs text-slate-500">Monthly payment</p><p class="font-bold text-navy text-lg">${{ '{:,.2f}'.format(loan['monthly_payment']|float) }}</p></div>
+      <div><p class="text-xs text-slate-500">Next payment</p><p class="font-bold text-navy text-lg">{{ loan['next_payment_date'] or '—' }}</p></div>
+      <div class="sm:text-right">
+        <form method="POST" action="/loan/{{ loan['id'] }}/pay">
+          <button class="bg-emerald2 hover:bg-emerald2-700 text-white font-semibold px-6 py-3 rounded-xl shadow"><i class="fa-solid fa-credit-card mr-1"></i>Make Payment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Amortization Schedule -->
+  <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+      <h3 class="font-bold text-navy">Amortization schedule</h3>
+      <span class="text-xs text-slate-500">{{ schedule|length }} payments</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+          <tr>
+            <th class="px-4 py-3 text-left">#</th>
+            <th class="px-4 py-3 text-left">Due date</th>
+            <th class="px-4 py-3 text-right">Payment</th>
+            <th class="px-4 py-3 text-right">Principal</th>
+            <th class="px-4 py-3 text-right">Interest</th>
+            <th class="px-4 py-3 text-right">Balance</th>
+            <th class="px-4 py-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+        {% for row in schedule %}
+          {% set paid = (row['status'] if 'status' in row.keys() else '')|lower == 'paid' or (row['paid_at'] if 'paid_at' in row.keys() else '') %}
+          <tr class="{% if paid %}bg-emerald-50/60{% endif %}">
+            <td class="px-4 py-2 font-semibold">{{ row['payment_number'] }}</td>
+            <td class="px-4 py-2">{{ row['due_date'] }}</td>
+            <td class="px-4 py-2 text-right">${{ '{:,.2f}'.format(row['payment_amount']|float) }}</td>
+            <td class="px-4 py-2 text-right">${{ '{:,.2f}'.format(row['principal']|float) }}</td>
+            <td class="px-4 py-2 text-right">${{ '{:,.2f}'.format(row['interest']|float) }}</td>
+            <td class="px-4 py-2 text-right font-medium">${{ '{:,.2f}'.format(row['remaining_balance']|float) }}</td>
+            <td class="px-4 py-2 text-center">
+              {% if paid %}<span class="inline-block px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold"><i class="fa-solid fa-check mr-1"></i>Paid</span>
+              {% else %}<span class="inline-block px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">Pending</span>{% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No schedule available.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Payment history -->
+  <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100"><h3 class="font-bold text-navy">Payment history</h3></div>
+    {% if payments and payments|length > 0 %}
+    <div class="divide-y divide-slate-100">
+      {% for p in payments %}
+      <div class="px-6 py-3 flex items-center justify-between text-sm">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald2 flex items-center justify-center"><i class="fa-solid fa-check"></i></div>
+          <div>
+            <p class="font-semibold">${{ '{:,.2f}'.format(p['amount']|float) }}</p>
+            <p class="text-xs text-slate-500">{{ p['created_at'] or p['payment_date'] or '' }}</p>
+          </div>
+        </div>
+        <span class="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold capitalize">{{ p['status'] if 'status' in p.keys() else 'completed' }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-6 py-10 text-center text-slate-500 text-sm">No payments recorded yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
