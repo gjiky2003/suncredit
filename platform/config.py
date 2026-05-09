@@ -46,6 +46,10 @@ class Config:
     # ── Admin ──
     ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@suncredit.com')
 
+    # ── JWT ──
+    JWT_EXPIRY_HOURS = int(os.getenv('JWT_EXPIRY_HOURS', '168'))  # 7 days
+    JWT_ALGORITHM = 'HS256'
+
     # ── Flask runtime ──
     DEBUG = os.getenv('FLASK_DEBUG', 'false').lower() == 'true'
     HOST = os.getenv('FLASK_HOST', '0.0.0.0')
